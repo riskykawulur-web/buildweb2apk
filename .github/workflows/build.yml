@@ -51,32 +51,27 @@ jobs:
           
           cd extracted_project
           
-          # Cari folder yang memiliki file gradlew secara akurat
-          if [ ! -f "gradlew" ]; then
-            SUB_DIR=$(find . -name "gradlew" -maxdepth 2 -exec dirname {} \; | head -n 1)
-            if [ -n "$SUB_DIR" ]; then
-              cd "$SUB_DIR"
-            fi
+          # Cari letak gradlew secara rekursif
+          GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n 1)
+          if [ -n "$GRADLEW_PATH" ]; then
+            GRADLE_DIR=$(dirname "$GRADLEW_PATH")
+            cd "$GRADLE_DIR"
           fi
           
           echo "Direktori kerja Gradle: $(pwd)"
           ls -la
           
-          # Beri izin eksekusi ke gradlew
           chmod +x gradlew
-          
-          # Build APK menggunakan Gradle
           ./gradlew assembleRelease
 
       - name: Sign Android APK (Web2APK)
         if: env.type == 'web2apk'
         run: |
           cd extracted_project
-          if [ ! -f "gradlew" ]; then
-            SUB_DIR=$(find . -name "gradlew" -maxdepth 2 -exec dirname {} \; | head -n 1)
-            if [ -n "$SUB_DIR" ]; then
-              cd "$SUB_DIR"
-            fi
+          GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n 1)
+          if [ -n "$GRADLEW_PATH" ]; then
+            GRADLE_DIR=$(dirname "$GRADLEW_PATH")
+            cd "$GRADLE_DIR"
           fi
 
           APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
@@ -135,7 +130,7 @@ jobs:
           fi
 
       # ==========================================================
-      # 📦 UPLOAD ARTIFACT (Menangkap APK dari kedua mode)
+      # 📦 UPLOAD ARTIFACT
       # ==========================================================
       - name: Upload APK
         uses: actions/upload-artifact@v4
